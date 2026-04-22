@@ -1,0 +1,54 @@
+{{- range $name, $config := .Values.services }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+spec:
+  replicas: {{ $.Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ $name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+    spec:
+      containers:
+      - name: {{ $name }}
+        image: {{ $config.image }}:{{ $config.tag }}
+        ports:
+        - containerPort: {{ $config.port }}
+        env:
+        - name: JWT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: micro-app-secrets
+              key: JWT_KEY
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: micro-app-secrets
+              key: MONGO_URI
+        - name: RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: micro-app-secrets
+              key: RABBITMQ_URL
+        - name: STRIPE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: micro-app-secrets
+              key: STRIPE_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}-srv
+spec:
+  selector:
+    app: {{ $name }}
+  ports:
+  - port: {{ $config.port }}
+    targetPort: {{ $config.port }}
+{{- end }}
