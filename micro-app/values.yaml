@@ -1,0 +1,33 @@
+replicaCount: 1
+
+services:
+  auth:
+    image: hammamioumayma/auth
+    tag: latest
+    port: 3001
+  client:
+    image: hammamioumayma/client
+    tag: latest
+    port: 4000
+  orders:
+    image: hammamioumayma/orders
+    tag: latest
+    port: 3003
+  payments:
+    image: hammamioumayma/payments
+    tag: latest
+    port: 3004
+  tickets:
+    image: hammamioumayma/tickets
+    tag: latest
+    port: 3002
+  expiration:
+    image: hammamioumayma/expiration
+    tag: latest
+    port: 3005
+
+secrets:
+  jwtKey: mysecretkey123456789pfe2026
+  mongoUri: "MONGO_URI_HERE"
+  rabbitmqUrl: "amqp://rabbitmq-srv:5672"
+  stripeKey: "STRIPE_KEY_HERE"
