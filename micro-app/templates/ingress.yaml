@@ -1,58 +1,61 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-ticket
+  name: micro-app-ingress
   annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
   rules:
-    - host: rabbitlokal.com
-      http:
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: rabbitmq-srv
-                port:
-                  number: 15672
-
-    - host: ticketapp.com
-      http:
-        paths:
-          - path: /api/payments/?(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: payments-srv
-                port:
-                  number: 3004
-          - path: /api/users/?(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: auth-srv
-                port:
-                  number: 3001
-          - path: /api/tickets/?(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: tickets-srv
-                port:
-                  number: 3002
-          - path: /api/orders/?(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: orders-srv
-                port:
-                  number: 3003
-          - path: /?(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: client-srv
-                port:
-                  number: 4000
+  - host: rabbitlokal.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: rabbitmq-srv
+            port:
+              number: {{ .Values.services.rabbitmq.port }}
+  - host: ticketapp.com
+    http:
+      paths:
+      - path: /api/users/?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: auth-srv
+            port:
+              number: {{ .Values.services.auth.port }}
+      - path: /api/tickets/?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: tickets-srv
+            port:
+              number: {{ .Values.services.tickets.port }}
+      - path: /api/orders/?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: orders-srv
+            port:
+              number: {{ .Values.services.orders.port }}
+      - path: /api/payments/?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: payments-srv
+            port:
+              number: {{ .Values.services.payments.port }}
+      - path: /?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: client-srv
+            port:
+              number: {{ .Values.services.client.port }}
