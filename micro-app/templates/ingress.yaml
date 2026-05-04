@@ -4,9 +4,6 @@ metadata:
   name: micro-app-ingress
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    nginx.ingress.kubernetes.io/limit-rps: "100"
-    nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
@@ -20,42 +17,54 @@ spec:
           service:
             name: rabbitmq-srv
             port:
-              number: {{ .Values.services.rabbitmq.port }}
+              number: {{ .Values.rabbitmq.managementPort }}
   - host: ticketapp.com
     http:
       paths:
+      {{- range .Values.microservices }}
+      {{- if eq .name "auth" }}
       - path: /api/users/?(.*)
         pathType: ImplementationSpecific
         backend:
           service:
-            name: auth-srv
+            name: {{ .name }}-srv
             port:
-              number: {{ .Values.services.auth.port }}
+              number: {{ .port }}
+      {{- end }}
+      {{- if eq .name "tickets" }}
       - path: /api/tickets/?(.*)
         pathType: ImplementationSpecific
         backend:
           service:
-            name: tickets-srv
+            name: {{ .name }}-srv
             port:
-              number: {{ .Values.services.tickets.port }}
+              number: {{ .port }}
+      {{- end }}
+      {{- if eq .name "orders" }}
       - path: /api/orders/?(.*)
         pathType: ImplementationSpecific
         backend:
           service:
-            name: orders-srv
+            name: {{ .name }}-srv
             port:
-              number: {{ .Values.services.orders.port }}
+              number: {{ .port }}
+      {{- end }}
+      {{- if eq .name "payments" }}
       - path: /api/payments/?(.*)
         pathType: ImplementationSpecific
         backend:
           service:
-            name: payments-srv
+            name: {{ .name }}-srv
             port:
-              number: {{ .Values.services.payments.port }}
+              number: {{ .port }}
+      {{- end }}
+      {{- if eq .name "client" }}
       - path: /?(.*)
         pathType: ImplementationSpecific
         backend:
           service:
-            name: client-srv
+            name: {{ .name }}-srv
             port:
-              number: {{ .Values.services.client.port }}
+              number: {{ .port }}
+      {{- end }}
+      {{- end }}

@@ -1,54 +1,45 @@
-{{- range $name, $config := .Values.services }}
+{{- range .Values.microservices }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $name }}
+  name: {{ .name }}
 spec:
-  replicas: {{ $.Values.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
-      app: {{ $name }}
+      app: {{ .name }}
   template:
     metadata:
       labels:
-        app: {{ $name }}
+        app: {{ .name }}
     spec:
       containers:
-      - name: {{ $name }}
-        image: {{ $config.image }}:{{ $config.tag }}
+      - name: {{ .name }}
+        image: {{ .image.repository }}:{{ .image.tag }}
         ports:
-        - containerPort: {{ $config.port }}
+        - containerPort: {{ .port }}
         env:
-        - name: JWT_KEY
+        {{- range .env }}
+        - name: {{ .name }}
+          {{- if .value }}
+          value: "{{ .value }}"
+          {{- else if .valueFrom }}
           valueFrom:
             secretKeyRef:
-              name: micro-app-secrets
-              key: JWT_KEY
-        - name: MONGO_URI
-          valueFrom:
-            secretKeyRef:
-              name: micro-app-secrets
-              key: MONGO_URI
-        - name: RABBITMQ_URL
-          valueFrom:
-            secretKeyRef:
-              name: micro-app-secrets
-              key: RABBITMQ_URL
-        - name: STRIPE_KEY
-          valueFrom:
-            secretKeyRef:
-              name: micro-app-secrets
-              key: STRIPE_KEY
+              name: {{ .valueFrom.secretKeyRef.name }}
+              key: {{ .valueFrom.secretKeyRef.key }}
+          {{- end }}
+        {{- end }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $name }}-srv
+  name: {{ .name }}-srv
 spec:
   selector:
-    app: {{ $name }}
+    app: {{ .name }}
   ports:
-  - port: {{ $config.port }}
-    targetPort: {{ $config.port }}
+  - port: {{ .port }}
+    targetPort: {{ .port }}
 {{- end }}
