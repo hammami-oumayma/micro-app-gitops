@@ -1,33 +1,123 @@
-replicaCount: 1
-
-services:
-  auth:
-    image: hammamioumayma/auth
-    tag: latest
+microservices:
+  - name: auth
+    image:
+      repository: hammamioumayma/auth
+      tag: latest
     port: 3001
-  client:
-    image: hammamioumayma/client
-    tag: latest
-    port: 4000
-  orders:
-    image: hammamioumayma/orders
-    tag: latest
-    port: 3003
-  payments:
-    image: hammamioumayma/payments
-    tag: latest
-    port: 3004
-  tickets:
-    image: hammamioumayma/tickets
-    tag: latest
-    port: 3002
-  expiration:
-    image: hammamioumayma/expiration
-    tag: latest
-    port: 3005
+    env:
+      - name: JWT_KEY
+        valueFrom:
+          secretKeyRef:
+            name: jwt-secret
+            key: JWT_KEY
+      - name: MONGO_URI
+        value: mongodb+srv://admin:admin123@cluster0.uk0q0u3.mongodb.net/auth?appName=Cluster0
+      - name: RABBITMQ_URL
+        valueFrom:
+          secretKeyRef:
+            name: rabbitmq-secret
+            key: rabbitmq_url
 
-secrets:
-  jwtKey: mysecretkey123456789pfe2026
-  mongoUri: "MONGO_URI_HERE"
-  rabbitmqUrl: "amqp://rabbitmq-srv:5672"
-  stripeKey: "STRIPE_KEY_HERE"
+  - name: client
+    image:
+      repository: hammamioumayma/client
+      tag: latest
+    port: 4000
+    env:
+      - name: HOST
+        value: "0.0.0.0"
+      - name: JWT_KEY
+        valueFrom:
+          secretKeyRef:
+            name: jwt-secret
+            key: JWT_KEY
+
+  - name: orders
+    image:
+      repository: hammamioumayma/orders
+      tag: latest
+    port: 3003
+    env:
+      - name: JWT_KEY
+        valueFrom:
+          secretKeyRef:
+            name: jwt-secret
+            key: JWT_KEY
+      - name: MONGO_URI
+        value: mongodb+srv://admin:admin123@cluster0.uk0q0u3.mongodb.net/orders?appName=Cluster0
+      - name: RABBITMQ_URL
+        valueFrom:
+          secretKeyRef:
+            name: rabbitmq-secret
+            key: rabbitmq_url
+
+  - name: payments
+    image:
+      repository: hammamioumayma/payments
+      tag: latest
+    port: 3004
+    env:
+      - name: JWT_KEY
+        valueFrom:
+          secretKeyRef:
+            name: jwt-secret
+            key: JWT_KEY
+      - name: MONGO_URI
+        value: mongodb+srv://admin:admin123@cluster0.uk0q0u3.mongodb.net/payments?appName=Cluster0
+      - name: RABBITMQ_URL
+        valueFrom:
+          secretKeyRef:
+            name: rabbitmq-secret
+            key: rabbitmq_url
+      - name: STRIPE_KEY
+        valueFrom:
+          secretKeyRef:
+            name: stripe-secret
+            key: STRIPE_KEY
+
+  - name: tickets
+    image:
+      repository: hammamioumayma/tickets
+      tag: latest
+    port: 3002
+    env:
+      - name: JWT_KEY
+        valueFrom:
+          secretKeyRef:
+            name: jwt-secret
+            key: JWT_KEY
+      - name: MONGO_URI
+        value: mongodb+srv://admin:admin123@cluster0.uk0q0u3.mongodb.net/tickets?appName=Cluster0
+      - name: RABBITMQ_URL
+        valueFrom:
+          secretKeyRef:
+            name: rabbitmq-secret
+            key: rabbitmq_url
+
+  - name: expiration
+    image:
+      repository: hammamioumayma/expiration
+      tag: latest
+    port: 3005
+    env:
+      - name: JWT_KEY
+        valueFrom:
+          secretKeyRef:
+            name: jwt-secret
+            key: JWT_KEY
+      - name: MONGO_URI
+        value: mongodb+srv://admin:admin123@cluster0.uk0q0u3.mongodb.net/expiration?appName=Cluster0
+      - name: RABBITMQ_URL
+        valueFrom:
+          secretKeyRef:
+            name: rabbitmq-secret
+            key: rabbitmq_url
+
+rabbitmq:
+  enabled: true
+  image: rabbitmq:3-management
+  port: 5672
+  managementPort: 15672
+
+mongodb:
+  enabled: false
