@@ -13,12 +13,26 @@ spec:
     metadata:
       labels:
         app: {{ .name }}
+      {{- if .useVault }}
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "micro-app"
+        vault.hashicorp.com/agent-inject-secret-config: "secret/data/micro-app"
+        vault.hashicorp.com/agent-inject-template-config: |
+          {{`{{- with secret "secret/data/micro-app" -}}`}}
+          export JWT_KEY="{{`{{ .Data.data.JWT_KEY }}`}}"
+          export MONGO_URI="{{`{{ .Data.data.MONGO_URI }}`}}"
+          export RABBITMQ_URL="{{`{{ .Data.data.RABBITMQ_URL }}`}}"
+          export STRIPE_KEY="{{`{{ .Data.data.STRIPE_KEY }}`}}"
+          export ADMIN_EMAIL="{{`{{ .Data.data.ADMIN_EMAIL }}`}}"
+          {{`{{- end -}}`}}
+      {{- end }}
     spec:
       containers:
       - name: {{ .name }}
         image: {{ .image.repository }}:{{ .image.tag }}
         ports:
-        - containerPort: {{ .port }}
+        - containerPort: {{ .targetPort | default 4000 }}
         env:
         {{- range .env }}
         - name: {{ .name }}
@@ -37,9 +51,17 @@ kind: Service
 metadata:
   name: {{ .name }}-srv
 spec:
+  {{- if .nodePort }}
+  type: NodePort
+  {{- else }}
+  type: ClusterIP
+  {{- end }}
   selector:
     app: {{ .name }}
   ports:
   - port: {{ .port }}
-    targetPort: {{ .port }}
+    targetPort: {{ .targetPort | default 4000 }}
+    {{- if .nodePort }}
+    nodePort: {{ .nodePort }}
+    {{- end }}
 {{- end }}

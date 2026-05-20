@@ -4,7 +4,6 @@ microservices:
       repository: hammamioumayma/auth
       tag: latest
     port: 3001
-    useVault: true
     env:
       - name: JWT_KEY
         valueFrom:
@@ -26,8 +25,6 @@ microservices:
       repository: hammamioumayma/client
       tag: latest
     port: 4000
-    nodePort: 30080
-    targetPort: 80
     env:
       - name: HOST
         value: "0.0.0.0"
@@ -42,7 +39,6 @@ microservices:
       repository: hammamioumayma/orders
       tag: latest
     port: 3003
-    useVault: true
     env:
       - name: JWT_KEY
         valueFrom:
@@ -64,7 +60,6 @@ microservices:
       repository: hammamioumayma/payments
       tag: latest
     port: 3004
-    useVault: true
     env:
       - name: JWT_KEY
         valueFrom:
@@ -91,7 +86,6 @@ microservices:
       repository: hammamioumayma/tickets
       tag: latest
     port: 3002
-    useVault: true
     env:
       - name: JWT_KEY
         valueFrom:
@@ -113,7 +107,6 @@ microservices:
       repository: hammamioumayma/expiration
       tag: latest
     port: 3005
-    useVault: true
     env:
       - name: JWT_KEY
         valueFrom:
